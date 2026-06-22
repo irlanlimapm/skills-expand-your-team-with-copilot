@@ -23,7 +23,8 @@ def init_database():
     # Initialize any missing activities without overwriting existing signups
     for name, details in initial_activities.items():
         activity_details = {
-            key: value for key, value in details.items() if key != "participants"
+            field: details[field]
+            for field in ("description", "schedule", "schedule_details", "max_participants")
         }
         participants = details.get("participants", [])
         activities_collection.update_one(
