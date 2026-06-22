@@ -183,6 +183,58 @@ section h3 {
   line-height: 1.4;
 }
 
+.share-actions {
+  margin-bottom: 8px;
+}
+
+.share-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.share-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.share-button {
+  background-color: var(--border-light);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 3px 8px;
+  font-size: 0.72rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.share-button:hover {
+  background-color: var(--primary-light);
+  color: white;
+  border-color: var(--primary-light);
+}
+
+.share-whatsapp {
+  border-color: #25d366;
+}
+
+.share-x {
+  border-color: #000000;
+}
+
+.share-email {
+  border-color: #1a73e8;
+}
+
+.share-copy {
+  border-color: #6d4c41;
+}
+
 .activity-card-actions {
   margin-top: auto;
   padding-top: 10px;
