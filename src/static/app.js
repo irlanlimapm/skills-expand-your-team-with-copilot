@@ -317,6 +317,15 @@ document.addEventListener("DOMContentLoaded", () => {
     return details.schedule;
   }
 
+  // Normalize activity descriptions before building share text
+  function buildSafeShareDescription(description) {
+    return String(description || "")
+      .replace(/[<>]/g, "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 140);
+  }
+
   // Function to determine activity type (this would ideally come from backend)
   function getActivityType(activityName, description) {
     const name = activityName.toLowerCase();
@@ -514,7 +523,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const activityUrl = `${window.location.origin}${
       window.location.pathname
     }?activity=${encodeURIComponent(name)}`;
-    const shareText = `Check out "${name}" at Mergington High School: ${details.description}`;
+    const safeShareDescription = buildSafeShareDescription(details.description);
+    const shareText = `Check out "${name}" at Mergington High School: ${safeShareDescription}`;
     const encodedShareText = encodeURIComponent(shareText);
     const encodedActivityUrl = encodeURIComponent(activityUrl);
     const emailSubject = encodeURIComponent(
@@ -894,7 +904,7 @@ document.addEventListener("DOMContentLoaded", () => {
     tempInput.style.left = "-9999px";
     document.body.appendChild(tempInput);
     tempInput.select();
-    // Fallback for older browsers when Clipboard API is unavailable.
+    // Legacy browser fallback only: Clipboard API remains the primary path.
     const copied = document.execCommand("copy");
     document.body.removeChild(tempInput);
 
