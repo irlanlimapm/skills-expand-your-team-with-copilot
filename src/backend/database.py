@@ -12,6 +12,8 @@ activities_collection = db['activities']
 teachers_collection = db['teachers']
 
 # Methods
+ACTIVITY_FIELDS = ("description", "schedule", "schedule_details", "max_participants")
+
 def hash_password(password):
     """Hash password using Argon2"""
     ph = PasswordHasher()
@@ -22,9 +24,13 @@ def init_database():
 
     # Initialize any missing activities without overwriting existing signups
     for name, details in initial_activities.items():
+        missing_fields = [field for field in ACTIVITY_FIELDS if field not in details]
+        if missing_fields:
+            raise ValueError(f"Activity '{name}' is missing required fields: {', '.join(missing_fields)}")
+
         activity_details = {
             field: details[field]
-            for field in ("description", "schedule", "schedule_details", "max_participants")
+            for field in ACTIVITY_FIELDS
         }
         participants = details.get("participants", [])
         activities_collection.update_one(
