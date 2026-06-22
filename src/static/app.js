@@ -320,7 +320,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Normalize activity descriptions before building share text
   function buildSafeShareDescription(description) {
     return String(description || "")
-      .replace(/[<>]/g, "")
+      .normalize("NFKC")
+      .replace(/[\u0000-\u001F\u007F<>`]/g, "")
       .replace(/\s+/g, " ")
       .trim()
       .slice(0, 140);
@@ -904,7 +905,7 @@ document.addEventListener("DOMContentLoaded", () => {
     tempInput.style.left = "-9999px";
     document.body.appendChild(tempInput);
     tempInput.select();
-    // Legacy browser fallback only: Clipboard API remains the primary path.
+    // Deprecated API used only for older browsers that do not support Clipboard API.
     const copied = document.execCommand("copy");
     document.body.removeChild(tempInput);
 
