@@ -66,6 +66,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // Initialize search from shared activity link
+  function initializeSharedActivityFromUrl() {
+    const sharedActivity = new URLSearchParams(window.location.search).get(
+      "activity"
+    );
+
+    if (sharedActivity) {
+      searchQuery = sharedActivity;
+      searchInput.value = sharedActivity;
+      showMessage(`Showing shared activity: ${sharedActivity}`, "info");
+    }
+  }
+
   // Function to set day filter
   function setDayFilter(day) {
     currentDay = day;
@@ -304,6 +317,17 @@ document.addEventListener("DOMContentLoaded", () => {
     return details.schedule;
   }
 
+  // Normalize activity descriptions before building share text
+  function buildSafeShareDescription(description) {
+    return String(description || "")
+      .normalize("NFKC")
+      // Remove control and HTML-unsafe characters before encoding into share URLs.
+      .replace(/[\u0000-\u001F\u007F<>`]/g, "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 140);
+  }
+
   // Function to determine activity type (this would ideally come from backend)
   function getActivityType(activityName, description) {
     const name = activityName.toLowerCase();
@@ -498,6 +522,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Format the schedule using the new helper function
     const formattedSchedule = formatSchedule(details);
+    const currentUrl = new URL(window.location.href);
+    const activityUrl = `${currentUrl.origin}${currentUrl.pathname}?activity=${encodeURIComponent(
+      name
+    )}`;
+    const safeShareDescription = buildSafeShareDescription(details.description);
+    const shareText = `Check out "${name}" at Mergington High School: ${safeShareDescription}`;
+    const encodedShareText = encodeURIComponent(shareText);
+    const encodedActivityUrl = encodeURIComponent(activityUrl);
+    const emailSubject = encodeURIComponent(
+      `Join me at ${name} - Mergington High School`
+    );
+    const emailBody = encodeURIComponent(
+      `${shareText}\n\nView all activities here: ${activityUrl}`
+    );
 
     // Create activity tag
     const tagHtml = `
@@ -527,6 +565,44 @@ document.addEventListener("DOMContentLoaded", () => {
         <strong>Schedule:</strong> ${formattedSchedule}
         <span class="tooltip-text">Regular meetings at this time throughout the semester</span>
       </p>
+      <div class="share-actions">
+        <span class="share-label">Share:</span>
+        <div class="share-links">
+          <a
+            class="share-button share-whatsapp"
+            href="https://wa.me/?text=${encodedShareText}%20${encodedActivityUrl}"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Share ${name} on WhatsApp"
+          >
+            WhatsApp
+          </a>
+          <a
+            class="share-button share-x"
+            href="https://twitter.com/intent/tweet?text=${encodedShareText}&url=${encodedActivityUrl}"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Share ${name} on X"
+          >
+            X
+          </a>
+          <a
+            class="share-button share-email"
+            href="mailto:?subject=${emailSubject}&body=${emailBody}"
+            aria-label="Share ${name} by email"
+          >
+            Email
+          </a>
+          <button
+            type="button"
+            class="share-button share-copy copy-share-button"
+            data-share-url="${activityUrl}"
+            aria-label="Copy activity link"
+          >
+            Copy Link
+          </button>
+        </div>
+      </div>
       ${capacityIndicator}
       <div class="participants-list">
         <h5>Current Participants:</h5>
@@ -576,6 +652,12 @@ document.addEventListener("DOMContentLoaded", () => {
     deleteButtons.forEach((button) => {
       button.addEventListener("click", handleUnregister);
     });
+
+    // Add click handler for copy link button
+    const copyShareButton = activityCard.querySelector(".copy-share-button");
+    if (copyShareButton) {
+      copyShareButton.addEventListener("click", handleCopyShareLink);
+    }
 
     // Add click handler for register button (only when authenticated)
     if (currentUser) {
@@ -811,6 +893,42 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 5000);
   }
 
+  // Copy text to clipboard with fallback support
+  async function copyTextToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return;
+    }
+
+    const tempInput = document.createElement("textarea");
+    tempInput.value = text;
+    tempInput.setAttribute("readonly", "");
+    tempInput.style.position = "absolute";
+    tempInput.style.left = "-9999px";
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    // document.execCommand("copy") is deprecated and intentionally kept as a fallback for older browsers without Clipboard API support.
+    const copied = document.execCommand("copy");
+    document.body.removeChild(tempInput);
+
+    if (!copied) {
+      throw new Error("Copy command failed");
+    }
+  }
+
+  // Handle copy link action for sharing
+  async function handleCopyShareLink(event) {
+    const shareUrl = event.currentTarget.dataset.shareUrl;
+
+    try {
+      await copyTextToClipboard(shareUrl);
+      showMessage("Activity link copied! Share it with your friends.", "success");
+    } catch (error) {
+      console.error("Error copying link:", error);
+      showMessage("Could not copy the link. Please try again.", "error");
+    }
+  }
+
   // Handle form submission
   signupForm.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -864,5 +982,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initialize app
   checkAuthentication();
   initializeFilters();
+  initializeSharedActivityFromUrl();
   fetchActivities();
 });
