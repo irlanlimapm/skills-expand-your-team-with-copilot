@@ -59,23 +59,23 @@ document.addEventListener("DOMContentLoaded", () => {
       currentDay = activeDayFilter.dataset.day;
     }
 
-    // Initialize search from shared activity link
-    function initializeSharedActivityFromUrl() {
-      const sharedActivity = new URLSearchParams(window.location.search).get(
-        "activity"
-      );
-
-      if (sharedActivity) {
-        searchQuery = sharedActivity;
-        searchInput.value = sharedActivity;
-        showMessage(`Showing shared activity: ${sharedActivity}`, "info");
-      }
-    }
-
     // Initialize time filter
     const activeTimeFilter = document.querySelector(".time-filter.active");
     if (activeTimeFilter) {
       currentTimeRange = activeTimeFilter.dataset.time;
+    }
+  }
+
+  // Initialize search from shared activity link
+  function initializeSharedActivityFromUrl() {
+    const sharedActivity = new URLSearchParams(window.location.search).get(
+      "activity"
+    );
+
+    if (sharedActivity) {
+      searchQuery = sharedActivity;
+      searchInput.value = sharedActivity;
+      showMessage(`Showing shared activity: ${sharedActivity}`, "info");
     }
   }
 
