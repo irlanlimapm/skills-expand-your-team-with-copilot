@@ -19,11 +19,28 @@ def hash_password(password):
 
 def init_database():
     """Initialize database if empty"""
+    activity_fields = ("description", "schedule", "schedule_details", "max_participants")
 
-    # Initialize activities if empty
-    if activities_collection.count_documents({}) == 0:
-        for name, details in initial_activities.items():
-            activities_collection.insert_one({"_id": name, **details})
+    # Initialize any missing activities without overwriting existing signups
+    for name, details in initial_activities.items():
+        missing_fields = [field for field in activity_fields if field not in details]
+        if missing_fields:
+            raise ValueError(
+                f"Activity '{name}' is missing these required fields: {', '.join(missing_fields)}"
+            )
+
+        activity_details = {field: details[field] for field in activity_fields}
+        participants = details.get("participants", [])
+        activities_collection.update_one(
+            {"_id": name},
+            {
+                "$set": activity_details,
+                "$setOnInsert": {
+                    "participants": participants
+                }
+            },
+            upsert=True
+        )
             
     # Initialize teacher accounts if empty
     if teachers_collection.count_documents({}) == 0:
@@ -153,6 +170,17 @@ initial_activities = {
         "max_participants": 18,
         "participants": ["isabella@mergington.edu", "lucas@mergington.edu"]
     },
+    "Manga Maniacs": {
+        "description": "Dive into the dramatic worlds of Japanese manga, swap favorite series, and celebrate unforgettable heroes, rivals, and plot twists together.",
+        "schedule": "Tuesdays at 7pm",
+        "schedule_details": {
+            "days": ["Tuesday"],
+            "start_time": "19:00",
+            "end_time": "20:00"
+        },
+        "max_participants": 15,
+        "participants": []
+    },
     "Sunday Chess Tournament": {
         "description": "Weekly tournament for serious chess players with rankings",
         "schedule": "Sundays, 2:00 PM - 5:00 PM",
@@ -186,4 +214,3 @@ initial_teachers = [
         "role": "admin"
     }
 ]
-
