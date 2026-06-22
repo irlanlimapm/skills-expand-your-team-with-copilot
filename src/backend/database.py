@@ -22,9 +22,17 @@ def init_database():
 
     # Initialize any missing activities without overwriting existing signups
     for name, details in initial_activities.items():
+        activity_details = details.copy()
+        participants = activity_details.pop("participants", [])
         activities_collection.update_one(
             {"_id": name},
-            {"$setOnInsert": details},
+            {
+                "$set": activity_details,
+                "$setOnInsert": {
+                    "_id": name,
+                    "participants": participants
+                }
+            },
             upsert=True
         )
             
