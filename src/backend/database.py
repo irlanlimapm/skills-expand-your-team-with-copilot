@@ -26,12 +26,11 @@ def init_database():
     for name, details in initial_activities.items():
         missing_fields = [field for field in ACTIVITY_FIELDS if field not in details]
         if missing_fields:
-            raise ValueError(f"Activity '{name}' is missing required fields: {', '.join(missing_fields)}")
+            raise ValueError(
+                f"Activity '{name}' is missing these required fields: {', '.join(missing_fields)}"
+            )
 
-        activity_details = {
-            field: details[field]
-            for field in ACTIVITY_FIELDS
-        }
+        activity_details = {field: details.get(field) for field in ACTIVITY_FIELDS}
         participants = details.get("participants", [])
         activities_collection.update_one(
             {"_id": name},
