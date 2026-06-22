@@ -59,6 +59,19 @@ document.addEventListener("DOMContentLoaded", () => {
       currentDay = activeDayFilter.dataset.day;
     }
 
+    // Initialize search from shared activity link
+    function initializeSharedActivityFromUrl() {
+      const sharedActivity = new URLSearchParams(window.location.search).get(
+        "activity"
+      );
+
+      if (sharedActivity) {
+        searchQuery = sharedActivity;
+        searchInput.value = sharedActivity;
+        showMessage(`Showing shared activity: ${sharedActivity}`, "info");
+      }
+    }
+
     // Initialize time filter
     const activeTimeFilter = document.querySelector(".time-filter.active");
     if (activeTimeFilter) {
@@ -498,7 +511,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Format the schedule using the new helper function
     const formattedSchedule = formatSchedule(details);
-    const activityUrl = `${window.location.origin}${window.location.pathname}`;
+    const activityUrl = `${window.location.origin}${
+      window.location.pathname
+    }?activity=${encodeURIComponent(name)}`;
     const shareText = `Check out "${name}" at Mergington High School: ${details.description}`;
     const encodedShareText = encodeURIComponent(shareText);
     const encodedActivityUrl = encodeURIComponent(activityUrl);
@@ -879,8 +894,13 @@ document.addEventListener("DOMContentLoaded", () => {
     tempInput.style.left = "-9999px";
     document.body.appendChild(tempInput);
     tempInput.select();
-    document.execCommand("copy");
+    // Fallback for older browsers when Clipboard API is unavailable.
+    const copied = document.execCommand("copy");
     document.body.removeChild(tempInput);
+
+    if (!copied) {
+      throw new Error("Copy command failed");
+    }
   }
 
   // Handle copy link action for sharing
@@ -949,5 +969,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initialize app
   checkAuthentication();
   initializeFilters();
+  initializeSharedActivityFromUrl();
   fetchActivities();
 });
