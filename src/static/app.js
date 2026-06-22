@@ -321,6 +321,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function buildSafeShareDescription(description) {
     return String(description || "")
       .normalize("NFKC")
+      // Remove control and HTML-unsafe characters before encoding into share URLs.
       .replace(/[\u0000-\u001F\u007F<>`]/g, "")
       .replace(/\s+/g, " ")
       .trim()
@@ -521,9 +522,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Format the schedule using the new helper function
     const formattedSchedule = formatSchedule(details);
-    const activityUrl = `${window.location.origin}${
-      window.location.pathname
-    }?activity=${encodeURIComponent(name)}`;
+    const currentUrl = new URL(window.location.href);
+    const activityUrl = `${currentUrl.origin}${currentUrl.pathname}?activity=${encodeURIComponent(
+      name
+    )}`;
     const safeShareDescription = buildSafeShareDescription(details.description);
     const shareText = `Check out "${name}" at Mergington High School: ${safeShareDescription}`;
     const encodedShareText = encodeURIComponent(shareText);
@@ -905,7 +907,7 @@ document.addEventListener("DOMContentLoaded", () => {
     tempInput.style.left = "-9999px";
     document.body.appendChild(tempInput);
     tempInput.select();
-    // Deprecated API used only for older browsers that do not support Clipboard API.
+    // document.execCommand("copy") is deprecated and intentionally kept as a fallback for older browsers without Clipboard API support.
     const copied = document.execCommand("copy");
     document.body.removeChild(tempInput);
 
