@@ -18,7 +18,7 @@ A website application that allows students to browse extracurricular activities 
 ### For Teachers
 - **Login** — Teachers sign in with a username and password using the Login button in the top-right corner
 - **Register students** — Authenticated teachers can enroll students in activities by entering the student's school email
-- **Unregister students** — Teachers can remove a student from an activity using the ✖ button next to the student's name
+- **Unregister students** — Teachers can remove a student from an activity using the remove button next to the student's name
 
 ### Activity Cards
 Each activity card shows:
